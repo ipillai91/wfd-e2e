@@ -12,9 +12,11 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.util.StringUtils;
 
 import com.java.example.tanzu.wherefordinner.config.EmailMessageConfigProperties;
 import com.java.example.tanzu.wherefordinner.model.Availability;
+import com.java.example.tanzu.wherefordinner.model.AvailabilityWindow;
 
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -49,19 +51,19 @@ public class EmailPublisher implements Publisher
 		
 		try
 		{
-			final var msgBuilder = new StringBuilder("Updated dining availability for ").append(avail.getDiningName());
-			if (avail.getAvailabilityWindows().isEmpty())
+			final var msgBuilder = new StringBuilder("Updated dining availability for ").append(avail.diningName());
+			if (avail.availabilityWindows().isEmpty())
 				msgBuilder.append("\tNo available dining times");
 			else
 			{
 				int cnt = 1;
-				for (Availability.AvailabilityWindow window : avail.getAvailabilityWindows())
+				for (AvailabilityWindow window : avail.availabilityWindows())
 				{
 					final var formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.getDefault());
 					
 					
-					final var startTime = formatter.format(Date.from(Instant.ofEpochMilli(window.getStartTime())));
-					final var endTime = formatter.format(Date.from(Instant.ofEpochMilli(window.getEndTime())));
+					final var startTime = formatter.format(Date.from(Instant.ofEpochMilli(window.startTime())));
+					final var endTime = formatter.format(Date.from(Instant.ofEpochMilli(window.endTime())));
 					
 					msgBuilder.append("\r\n\t").append(cnt).append(". Window Start Time: ").append(startTime);
 					msgBuilder.append("\r\n\t").append(cnt).append(". Window End Time: ").append(endTime).append("\r\n");
@@ -72,10 +74,13 @@ public class EmailPublisher implements Publisher
 			
 			message.setFrom(from);
 			message.setSubject(subject);
-			message.setText(message.toString());
+			message.setText(msgBuilder.toString());
 			
-			for (String toRecip : to)
-				message.addRecipient(RecipientType.TO, new InternetAddress(toRecip));
+			if (StringUtils.hasText(avail.sendResultsTo()))
+				message.addRecipient(RecipientType.TO, new InternetAddress(avail.sendResultsTo()));
+			else
+				for (String toRecip : to)
+					message.addRecipient(RecipientType.TO, new InternetAddress(toRecip));
 			
 			emailSender.send(message);
 		}

@@ -1,11 +1,13 @@
 package com.java.example.tanzu.wherefordinner;
 
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+
+import com.java.example.tanzu.wherefordinner.resources.SearchResource;
 
 @SpringBootApplication
-@EnableR2dbcRepositories("com.java.example.tanzu.wherefordinner.repository")
+@RegisterReflectionForBinding(SearchResource.class)
 public class WhereForDinnerResApplication {
 
 	public static void main(String[] args) {

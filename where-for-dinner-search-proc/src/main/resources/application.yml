@@ -4,10 +4,14 @@ management:
       enabled: false
 
 spring: 
+  application:
+    name: where-for-dinner-search-proc
+
   cloud: 
+    function:
+      definition: processSearch
     stream:
-      function:
-        definition: processSearch
+      defaultBinder: rabbit
       bindings: 
         processSearch-in-0: 
           destination: where-for-dinner-search-criteria
@@ -115,14 +119,53 @@ where-for-dinner:
 spring:
   config.activate.on-profile: redis
 
+  redis:
+    ssl: false
+    port: 6379
+
   data:
     redis:
       # Workaround for https://github.com/spring-cloud/spring-cloud-bindings/issues/87:
       host: ${spring.redis.host}
       password: ${spring.redis.password}
       port: ${spring.redis.port}
+      ssl.eanbled: ${spring.redis.ssl}
   
 management:
   health:
     redis:
       enabled: true
+    
+---
+
+spring:
+  config.activate.on-profile: kafka
+  
+  cloud: 
+    stream:
+      defaultBinder: kafka
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+management:
+  health:
+    rabbit:
+      enabled: false
+
+---
+
+spring:
+  config.activate.on-profile: kinesis
+  
+  cloud: 
+    stream:
+      defaultBinder: kinesis
+      
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+
+management:
+  health:
+    rabbit:
+      enabled: false
