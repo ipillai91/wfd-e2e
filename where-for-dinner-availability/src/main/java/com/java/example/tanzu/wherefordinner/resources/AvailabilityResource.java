@@ -155,6 +155,6 @@ public class AvailabilityResource
 	@GetMapping("app/version")
 	public Mono<String> getAvailabilityAppVersion()
 	{
-		return Mono.just("ipillai 4:30 pm Dec 28");
+		return Mono.just("ipillai 8:30 am jan 3");
 	}
 }
